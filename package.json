@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "node scripts/next-start.mjs",
     "prestart": "node scripts/prisma-migrate-deploy.mjs",
     "lint": "eslint .",
     "format": "prettier --write .",
