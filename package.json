@@ -3,14 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "packageManager": "npm@10.9.0",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "prestart": "prisma migrate deploy",
     "lint": "eslint .",
     "format": "prettier --write .",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
     "postinstall": "prisma generate",
     "prebuild": "prisma generate"
