@@ -6,6 +6,26 @@ import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
 
+function sanitizeUrl(rawUrl: string | null | undefined): string | undefined {
+  if (!rawUrl) {
+    return undefined;
+  }
+  const trimmed = rawUrl.trim();
+  if (!trimmed) {
+    return undefined;
+  }
+  try {
+    const url = new URL(trimmed, typeof window !== "undefined" ? window.location.origin : "http://localhost");
+    const protocol = url.protocol.toLowerCase();
+    if (protocol === "http:" || protocol === "https:") {
+      return trimmed;
+    }
+  } catch {
+    // If URL construction fails, treat as unsafe.
+  }
+  return undefined;
+}
+
 export function LinkedInPanel({
   applicationId,
   jobTitle,
@@ -31,6 +51,11 @@ export function LinkedInPanel({
   const [jobUrl, setJobUrl] = React.useState(initialJobLinkedInUrl ?? "");
   const [contactUrl, setContactUrl] = React.useState(initialContactLinkedInUrl ?? "");
   const [threadUrl, setThreadUrl] = React.useState(initialThreadLinkedInUrl ?? "");
+
+  const safeCompanyUrl = sanitizeUrl(companyUrl);
+  const safeJobUrl = sanitizeUrl(jobUrl);
+  const safeContactUrl = sanitizeUrl(contactUrl);
+  const safeThreadUrl = sanitizeUrl(threadUrl);
 
   const [tone, setTone] = React.useState<"WARM" | "NEUTRAL" | "DIRECT">("NEUTRAL");
   const [humanLevel, setHumanLevel] = React.useState(70);
@@ -134,20 +159,20 @@ export function LinkedInPanel({
         >
           Find recruiter / HM
         </a>
-        {jobUrl ? (
+        {safeJobUrl ? (
           <a
             className="glass rounded-xl px-3 py-2 text-sm ring-1 ring-white/10 hover:bg-white/10"
-            href={jobUrl}
+            href={safeJobUrl}
             target="_blank"
             rel="noreferrer"
           >
             Open LinkedIn posting
           </a>
         ) : null}
-        {threadUrl ? (
+        {safeThreadUrl ? (
           <a
             className="glass rounded-xl px-3 py-2 text-sm ring-1 ring-white/10 hover:bg-white/10"
-            href={threadUrl}
+            href={safeThreadUrl}
             target="_blank"
             rel="noreferrer"
           >
