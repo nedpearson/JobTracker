@@ -40,7 +40,7 @@ export default async function SignUpPage({
       }
     });
 
-    await signIn("credentials", { email, password, redirectTo: callbackUrl });
+    await signIn("credentials", { email, password, remember: "on", redirectTo: callbackUrl });
   }
 
   const message =

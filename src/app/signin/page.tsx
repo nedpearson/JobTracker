@@ -17,7 +17,8 @@ export default async function SignInPage({
     "use server";
     const email = String(formData.get("email") ?? "");
     const password = String(formData.get("password") ?? "");
-    await signIn("credentials", { email, password, redirectTo: callbackUrl });
+    const remember = formData.get("remember") ? "on" : "off";
+    await signIn("credentials", { email, password, remember, redirectTo: callbackUrl });
   }
 
   return (
