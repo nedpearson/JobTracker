@@ -8,7 +8,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "prestart": "prisma db push --skip-generate",
+    "prestart": "prisma migrate deploy",
     "lint": "eslint .",
     "format": "prettier --write .",
     "prisma:generate": "prisma generate",
