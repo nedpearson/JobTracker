@@ -16,27 +16,36 @@ export default async function SignInPage({
   const created = typeof sp.created === "string" ? sp.created : "";
   const emailPrefill = typeof sp.email === "string" ? sp.email : "";
 
-  const h = await headers();
-  const proto = h.get("x-forwarded-proto") ?? "http";
-  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
-  const origin = `${proto}://${host}`;
-  const redirectTo = new URL(callbackUrl, origin).toString();
+  function safeCallbackPath(raw: string) {
+    // Only allow in-app redirects.
+    return raw.startsWith("/") ? raw : "/";
+  }
+
+  async function getRedirectTo(rawCallbackUrl: string) {
+    // Prefer AUTH_URL in production; fall back to forwarded headers.
+    const base = process.env.AUTH_URL;
+    if (base) return new URL(safeCallbackPath(rawCallbackUrl), base).toString();
+
+    const h = await headers();
+    const proto = h.get("x-forwarded-proto") ?? "http";
+    const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
+    const origin = `${proto}://${host}`;
+    return new URL(safeCallbackPath(rawCallbackUrl), origin).toString();
+  }
 
   async function signInWithPassword(formData: FormData) {
     "use server";
-    // Auth.js v5 handles Credentials best via FormData.
-    // Include redirectTo so the browser doesn't land on /api/auth/callback/credentials.
-    formData.set("redirectTo", redirectTo);
-    formData.set("remember", formData.get("remember") ? "on" : "off");
-    await signIn("credentials", formData);
+    const email = String(formData.get("email") ?? "");
+    const password = String(formData.get("password") ?? "");
+    const remember = formData.get("remember") ? "on" : "off";
+    const redirectTo = await getRedirectTo(callbackUrl);
+    await signIn("credentials", { email, password, remember, redirectTo });
   }
 
   async function signInDemo(formData: FormData) {
     "use server";
-    formData.set("demo", "on");
-    formData.set("remember", "on");
-    formData.set("redirectTo", redirectTo);
-    await signIn("credentials", formData);
+    const redirectTo = await getRedirectTo(callbackUrl);
+    await signIn("credentials", { demo: "on", remember: "on", redirectTo });
   }
 
   return (
