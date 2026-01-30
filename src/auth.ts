@@ -4,23 +4,26 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
 import { verifyPassword } from "@/lib/auth/password";
-import { getRememberMe, setRememberMe } from "@/lib/auth/remember";
+import type { Adapter } from "next-auth/adapters";
 
 const baseAdapter = PrismaAdapter(prisma);
-const adapter = {
+const adapter: Adapter = {
   ...baseAdapter,
   async createSession(session) {
-    const rememberMe = getRememberMe();
-    if (rememberMe === false) {
-      // "Not remembered": shorter session lifetime.
-      // (Cookie expiry follows the DB session expiry for database sessions.)
+    // IMPORTANT:
+    // Do NOT rely on AsyncLocalStorage between Credentials `authorize` and adapter methods.
+    // Instead, we persist the remember-me choice on the user record at login.
+    const user = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { rememberMe: true }
+    });
+
+    if (user?.rememberMe === false) {
       const twelveHours = 12 * 60 * 60 * 1000;
-      return baseAdapter.createSession({
-        ...session,
-        expires: new Date(Date.now() + twelveHours)
-      });
+      return baseAdapter.createSession!({ ...session, expires: new Date(Date.now() + twelveHours) });
     }
-    return baseAdapter.createSession(session);
+
+    return baseAdapter.createSession!(session);
   }
 };
 
@@ -34,7 +37,6 @@ const providers = [
     },
     async authorize(credentials) {
       const remember = (credentials?.remember ?? "").toString() === "on";
-      setRememberMe(remember);
 
       const email = (credentials?.email ?? "").toString().trim().toLowerCase();
       const password = (credentials?.password ?? "").toString();
@@ -45,6 +47,14 @@ const providers = [
 
       const ok = verifyPassword(password, user.passwordHash);
       if (!ok) return null;
+
+      // Persist remember-me preference for this login so the adapter can read it.
+      if (user.rememberMe !== remember) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { rememberMe: remember }
+        });
+      }
 
       return user;
     }
@@ -67,4 +77,3 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }
   }
 });
-
