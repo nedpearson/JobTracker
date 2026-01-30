@@ -53,7 +53,7 @@ export const NAV_ITEMS: NavItem[] = [
     shortLabel: "Jobs",
     mobile: true,
     icon: ({ className } = {}) => (
-      <IconBase className={cou lassName}>
+      <IconBase className={className}>
         <path d="M9 6V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1" />
         <rect x="3" y="6" width="18" height="15" rx="2" />
         <path d="M3 12h18" />
