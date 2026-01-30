@@ -5,7 +5,7 @@ import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { WorkMode } from "@/generated/prisma/client";
+import { WorkMode } from "@prisma/client";
 
 export default async function ProfilePage() {
   const session = await auth();

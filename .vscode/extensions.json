@@ -1,7 +1,7 @@
 {
   "recommendations": [
     "mtxr.sqltools",
-    "mtxr.sqltools-driver-sqlite"
+    "mtxr.sqltools-driver-pg"
   ]
 }
 

@@ -16,7 +16,7 @@ const nextConfig = {
 
   // Prisma (and native deps like better-sqlite3) should not be bundled by the server compiler.
   // Bundling can pick the wrong runtime entrypoints and crash during "Collecting page data".
-  serverExternalPackages: ["@prisma/client", "prisma", "@prisma/adapter-better-sqlite3", "better-sqlite3"],
+  serverExternalPackages: ["@prisma/client", "prisma", "@prisma/adapter-pg", "pg"],
 
   // In some restricted environments, spawning `tsc` during `next build` can fail (spawn EPERM).
   // Skipping build-time typechecking keeps `next build` usable here.

@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
-import type { ApplicationStage, EmailTone } from "@/generated/prisma/client";
+import type { ApplicationStage, EmailTone } from "@prisma/client";
 import { FollowUpGenerator } from "./followup/FollowUpGenerator";
 import { JobDeepDivePanel } from "./job/JobDeepDivePanel";
 import { LinkedInPanel } from "./linkedin/LinkedInPanel";

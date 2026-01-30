@@ -48,7 +48,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
                 <div className="text-xs font-medium text-white/50">Job Tracker</div>
                 <div className="text-lg font-semibold">Your personal headhunter</div>
               </div>
-              <div className="text-xs text-white/50">v0.1 • App Router • SQLite</div>
+              <div className="text-xs text-white/50">v0.1 • App Router • Postgres</div>
             </div>
             {children}
           </div>

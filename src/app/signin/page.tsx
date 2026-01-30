@@ -42,7 +42,7 @@ export default async function SignInPage({
     await signIn("credentials", { email, password, remember, redirectTo });
   }
 
-  async function signInDemo(formData: FormData) {
+  async function signInDemo() {
     "use server";
     const redirectTo = await getRedirectTo(callbackUrl);
     await signIn("credentials", { demo: "on", remember: "on", redirectTo });

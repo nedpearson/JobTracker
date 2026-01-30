@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import type { ApplicationStage } from "@/generated/prisma/client";
+import type { ApplicationStage } from "@prisma/client";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/Button";
 

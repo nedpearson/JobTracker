@@ -8,7 +8,9 @@ export default defineConfig({
   },
   datasource: {
     // Use process.env directly so commands like "prisma generate" don't fail if env is missing in CI.
-    url: process.env.DATABASE_URL ?? "file:./dev.db"
+    url:
+      process.env.DATABASE_URL ??
+      "postgresql://postgres:postgres@localhost:5432/jobtracker?schema=public"
   }
 });
 

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/Input";
 import { prisma } from "@/lib/db";
 import { auth } from "@/auth";
 import { ImportRemotiveButton } from "./ImportRemotiveButton";
-import { WorkMode } from "@/generated/prisma/client";
+import { WorkMode } from "@prisma/client";
 import { ScoreButton } from "./ScoreButton";
 import { CompanyFitButton } from "./CompanyFitButton";
 import { TrackButton } from "./TrackButton";

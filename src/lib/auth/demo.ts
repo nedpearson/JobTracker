@@ -1,4 +1,4 @@
-import type { PrismaClient } from "@/generated/prisma/client";
+import type { PrismaClient } from "@prisma/client";
 
 const DEMO_EMAIL = "demo@jobtracker.app";
 

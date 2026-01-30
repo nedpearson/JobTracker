@@ -1,12 +1,11 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  // Standard Prisma Client (connects via DATABASE_URL, no driver adapter required)
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  // Prisma 7: move connection URL to `prisma.config.ts` (datasource.url)
-  // and pass an adapter to `PrismaClient` (see `src/lib/db.ts`).
+  provider = "postgresql"
+  // Prisma 7: connection URL is configured via `prisma.config.ts` (datasource.url).
 }
 
 enum WorkMode {

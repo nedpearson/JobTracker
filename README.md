@@ -20,7 +20,7 @@ An “agency-style” job hunting app: track jobs + applications, score your mat
 
 - Next.js (App Router) + TypeScript
 - Tailwind CSS
-- Prisma + SQLite
+- Prisma + Postgres
 - Auth.js / NextAuth (Google OAuth)
 
 ## Setup

@@ -1,4 +1,4 @@
-import type { Job, Profile, Skill, WorkMode } from "@/generated/prisma/client";
+import type { Job, Profile, Skill, WorkMode } from "@prisma/client";
 import { includesPhrase } from "@/lib/text/keywords";
 
 export type MatchResult = {

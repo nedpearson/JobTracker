@@ -1,4 +1,4 @@
-import { WorkMode } from "@/generated/prisma/client";
+import { WorkMode } from "@prisma/client";
 
 type RemotiveJob = {
   id: number;
