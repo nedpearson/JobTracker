@@ -116,8 +116,7 @@ export function ApplicationsBoard({ initial }: { initial: BoardApplication[] }) 
             <div
               key={s.key}
               className={cn(
-                "min-w-[280px] flex-1 rounded-2xl p-2 ring-1 ring-white/10",
-                "bg-white/[0.02]"
+                "min-w-[280px] flex-1 rounded-2xl p-2 ring-1 ring-border/60 bg-surface/40 shadow-elev-1"
               )}
               onDragOver={(e) => {
                 e.preventDefault();
@@ -128,15 +127,15 @@ export function ApplicationsBoard({ initial }: { initial: BoardApplication[] }) 
               }}
             >
               <div className="mb-2 flex items-center justify-between px-1">
-                <div className="text-sm font-semibold">
+                <div className="text-sm font-semibold text-text">
                   {s.label}{" "}
-                  {isBusy ? <span className="text-xs font-normal text-white/50">Updating…</span> : null}
+                  {isBusy ? <span className="text-xs font-normal text-muted/70">Updating…</span> : null}
                 </div>
-                <div className="text-xs text-white/50">{items.length}</div>
+                <div className="text-xs text-muted/70 tabular-nums">{items.length}</div>
               </div>
               <div className="space-y-2">
                 {items.length === 0 ? (
-                  <div className="text-muted rounded-xl bg-white/[0.02] p-3 text-sm ring-1 ring-white/10">
+                  <div className="rounded-xl bg-surface/55 p-3 text-sm text-muted/80 ring-1 ring-border/60">
                     Drop here.
                   </div>
                 ) : (
@@ -147,14 +146,14 @@ export function ApplicationsBoard({ initial }: { initial: BoardApplication[] }) 
                       onDragStart={() => setDraggingId(a.id)}
                       onDragEnd={() => setDraggingId(null)}
                       className={cn(
-                        "rounded-xl bg-white/[0.03] p-3 ring-1 ring-white/10",
+                        "cursor-grab rounded-xl bg-surface/55 p-3 ring-1 ring-border/60 shadow-elev-1 hover:bg-surface/80 hover:ring-border/85 transition active:cursor-grabbing",
                         draggingId === a.id ? "opacity-60" : "opacity-100"
                       )}
                       title="Drag to another column"
                     >
                       <div className="flex items-center justify-between gap-2">
                         <Link
-                          className="block text-sm font-medium underline decoration-white/10 underline-offset-4"
+                          className="block text-sm font-medium text-text/90 underline decoration-border/60 underline-offset-4 hover:text-text"
                           href={`/applications/${a.id}`}
                         >
                           {a.job.title}
@@ -174,13 +173,13 @@ export function ApplicationsBoard({ initial }: { initial: BoardApplication[] }) 
                           </Button>
                         ) : null}
                       </div>
-                      <div className="text-muted text-sm">{a.job.companyName ?? "Unknown company"}</div>
-                      <div className="mt-2 flex items-center justify-between text-xs text-white/60">
+                      <div className="text-sm text-muted/80">{a.job.companyName ?? "Unknown company"}</div>
+                      <div className="mt-2 flex items-center justify-between text-xs text-muted/70">
                         <div>
-                          Follow-up: <span className="text-white/70">{fmtDate(a.nextFollowUpAt)}</span>
+                          Follow-up: <span className="text-text/85">{fmtDate(a.nextFollowUpAt)}</span>
                         </div>
                         <div>
-                          Outreach: <span className="text-white/70">{a.outreachCount}</span>{" "}
+                          Outreach: <span className="text-text/85 tabular-nums">{a.outreachCount}</span>{" "}
                           {a.lastOutreachAt ? `• last ${fmtDate(a.lastOutreachAt)}` : ""}
                         </div>
                       </div>
@@ -192,7 +191,9 @@ export function ApplicationsBoard({ initial }: { initial: BoardApplication[] }) 
           );
         })}
       </div>
-      <div className="text-muted mt-2 text-xs">Tip: drag a card into a new column to update stage instantly.</div>
+      <div className="mt-2 text-xs text-muted/75">
+        Tip: drag a card into a new column to update stage instantly.
+      </div>
     </div>
   );
 }

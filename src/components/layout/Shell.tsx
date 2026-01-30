@@ -82,6 +82,23 @@ export function Shell({ children }: { children: React.ReactNode }) {
       {/* Mobile bottom nav */}
       <BottomNav />
 
+      {/* Mobile Quick Add FAB */}
+      <Link
+        href="/jobs"
+        aria-label="Quick add"
+        className="fixed bottom-[84px] right-4 z-40 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-fg shadow-elev-2 ring-1 ring-primary/30 hover:brightness-110 active:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45 md:hidden"
+      >
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path
+            d="M12 5v14M5 12h14"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+        </svg>
+      </Link>
+
       {/* Mobile menu overlay */}
       {mobileMenuOpen ? (
         <div
