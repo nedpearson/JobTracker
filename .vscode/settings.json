@@ -6,5 +6,14 @@
         "**/.DS_Store": true,
         "**/Thumbs.db": true,
         ".mule": true
-    }
+    },
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "database": "file:./dev.db",
+            "name": "Job Tracker"
+        }
+    ],
+    "sqltools.useNodeRuntime": true
 }
