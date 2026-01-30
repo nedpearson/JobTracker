@@ -12,7 +12,10 @@ const envSchema = z.object({
   OPENAI_API_KEY: z.string().optional().default(""),
   OPENAI_MODEL: z.string().optional().default("gpt-4o-mini"),
   SERPAPI_API_KEY: z.string().optional().default(""),
-  ALLOW_DEV_LOGIN: z.string().optional().default("true")
+  ALLOW_DEV_LOGIN: z.string().optional().default("true"),
+  // Allows anyone to one-click into a seeded demo account from /signin.
+  // Set to "false" if you don't want public demo access.
+  ALLOW_DEMO_LOGIN: z.string().optional().default("true")
 });
 
 export const env = envSchema.parse({
@@ -25,6 +28,7 @@ export const env = envSchema.parse({
   OPENAI_API_KEY: process.env.OPENAI_API_KEY,
   OPENAI_MODEL: process.env.OPENAI_MODEL,
   SERPAPI_API_KEY: process.env.SERPAPI_API_KEY,
-  ALLOW_DEV_LOGIN: process.env.ALLOW_DEV_LOGIN
+  ALLOW_DEV_LOGIN: process.env.ALLOW_DEV_LOGIN,
+  ALLOW_DEMO_LOGIN: process.env.ALLOW_DEMO_LOGIN
 });
 

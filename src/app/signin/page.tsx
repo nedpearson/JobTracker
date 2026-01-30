@@ -1,5 +1,6 @@
 import { signIn } from "@/auth";
 import Link from "next/link";
+import { headers } from "next/headers";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -12,27 +13,62 @@ export default async function SignInPage({
   const sp = (await searchParams) ?? {};
   const callbackUrl = typeof sp.callbackUrl === "string" ? sp.callbackUrl : "/";
   const error = typeof sp.error === "string" ? sp.error : "";
+  const created = typeof sp.created === "string" ? sp.created : "";
+  const emailPrefill = typeof sp.email === "string" ? sp.email : "";
+
+  const h = await headers();
+  const proto = h.get("x-forwarded-proto") ?? "http";
+  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
+  const origin = `${proto}://${host}`;
+  const redirectTo = new URL(callbackUrl, origin).toString();
 
   async function signInWithPassword(formData: FormData) {
     "use server";
-    const email = String(formData.get("email") ?? "");
-    const password = String(formData.get("password") ?? "");
-    const remember = formData.get("remember") ? "on" : "off";
-    await signIn("credentials", { email, password, remember, redirectTo: callbackUrl });
+    // Auth.js v5 handles Credentials best via FormData.
+    // Include redirectTo so the browser doesn't land on /api/auth/callback/credentials.
+    formData.set("redirectTo", redirectTo);
+    formData.set("remember", formData.get("remember") ? "on" : "off");
+    await signIn("credentials", formData);
+  }
+
+  async function signInDemo(formData: FormData) {
+    "use server";
+    formData.set("demo", "on");
+    formData.set("remember", "on");
+    formData.set("redirectTo", redirectTo);
+    await signIn("credentials", formData);
   }
 
   return (
     <Card title="Sign in" description="Use your email and password to access your workspace.">
+      {created === "1" ? (
+        <div className="mt-2 rounded-xl bg-emerald-500/10 p-3 text-sm text-emerald-200 ring-1 ring-emerald-500/20">
+          Account created. Sign in to continue.
+        </div>
+      ) : null}
       {error ? (
         <div className="mt-2 rounded-xl bg-red-500/10 p-3 text-sm text-red-200 ring-1 ring-red-500/20">
           {error === "CredentialsSignin" ? "Invalid email or password." : `Sign-in error: ${error}`}
         </div>
       ) : null}
 
+      <form action={signInDemo} className="mt-3">
+        <Button className="w-full" variant="secondary" type="submit">
+          Try the demo (no account needed)
+        </Button>
+      </form>
+
       <form action={signInWithPassword} className="mt-3 space-y-3">
         <div className="space-y-2">
           <label className="text-xs font-medium text-white/70">Email</label>
-          <Input name="email" type="email" placeholder="you@company.com" required autoComplete="email" />
+          <Input
+            name="email"
+            type="email"
+            placeholder="you@company.com"
+            required
+            autoComplete="email"
+            defaultValue={emailPrefill}
+          />
         </div>
         <div className="space-y-2">
           <label className="text-xs font-medium text-white/70">Password</label>

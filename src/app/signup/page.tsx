@@ -2,7 +2,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { hashPassword } from "@/lib/auth/password";
-import { signIn } from "@/auth";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -40,7 +39,10 @@ export default async function SignUpPage({
       }
     });
 
-    await signIn("credentials", { email, password, remember: "on", redirectTo: callbackUrl });
+    // After signup, send user back to sign-in (no extra click).
+    redirect(
+      `/signin?created=1&email=${encodeURIComponent(email)}&callbackUrl=${encodeURIComponent(callbackUrl)}`
+    );
   }
 
   const message =
