@@ -11,6 +11,18 @@ dist
 prisma/dev.db
 prisma/dev.db-journal
 
+# Root-level SQLite dev database (local artifact)
+dev.db
+dev.db-journal
+
+# SQLite sidecar files (WAL/SHM/journal)
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+
 # Prisma client output (generated locally / per-platform)
 src/generated/prisma/
 

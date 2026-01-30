@@ -11,7 +11,7 @@
         {
             "previewLimit": 50,
             "driver": "SQLite",
-            "database": "file:./dev.db",
+            "database": "./dev.db",
             "name": "Job Tracker"
         }
     ],
