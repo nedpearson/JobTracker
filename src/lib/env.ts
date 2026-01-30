@@ -34,7 +34,10 @@ function buildDatabaseUrl(): string | undefined {
 
 const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
-  AUTH_SECRET: z.string().min(1),
+  // AUTH_SECRET is required for Auth.js at runtime, but some build environments
+  // don't provide secrets during `next build` / route module evaluation.
+  // We validate it in the auth layer instead of crashing unrelated builds.
+  AUTH_SECRET: z.string().optional().default(""),
   // Auth.js/NextAuth reads these directly from process.env, but we keep them here
   // so deployments fail fast if you choose to validate them later.
   AUTH_URL: z.string().optional().default(""),

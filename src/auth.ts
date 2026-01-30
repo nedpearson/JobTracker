@@ -58,7 +58,9 @@ const providers = [
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter,
-  secret: env.AUTH_SECRET,
+  // Read directly from process.env so `next build` doesn't fail if the build
+  // environment withholds secrets. Auth.js will still require a real secret at runtime.
+  secret: process.env.AUTH_SECRET,
   // Credentials provider requires JWT sessions in Auth.js / NextAuth v5.
   session: {
     strategy: "jwt",
