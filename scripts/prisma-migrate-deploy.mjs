@@ -10,6 +10,8 @@ const prismaBin = path.join(process.cwd(), "node_modules", ".bin", bin);
 const child = spawn(prismaBin, ["migrate", "deploy"], {
   env: process.env,
   stdio: ["inherit", "inherit", "pipe"],
+  // Required to execute `.cmd` shims on Windows.
+  shell: process.platform === "win32",
 });
 
 child.stderr.on("data", (chunk) => {
