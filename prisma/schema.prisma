@@ -33,9 +33,11 @@ enum EmailTone {
 model User {
   id            String    @id @default(cuid())
   name          String?
-  email         String?   @unique
+  // Email is the primary login identifier for this app.
+  email         String    @unique
   emailVerified DateTime?
   image         String?
+  passwordHash  String?
 
   accounts Account[]
   sessions Session[]
