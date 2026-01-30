@@ -5,8 +5,9 @@ import path from "node:path";
 // Prisma sometimes writes non-error status lines to stderr, so we pipe stderr -> stdout.
 
 function buildDatabaseUrl(env) {
+  const databaseUrl = typeof env.DATABASE_URL === "string" ? env.DATABASE_URL.trim() : "";
   const candidates = [
-    env.DATABASE_URL,
+    databaseUrl,
     env.POSTGRES_URL,
     env.POSTGRESQL_URL,
     env.POSTGRES_URL_NON_POOLING,
@@ -34,9 +35,9 @@ function buildDatabaseUrl(env) {
   const database = env.PGDATABASE ?? env.POSTGRES_DB ?? env.POSTGRESQL_DB;
 
   if (!host || !user || !password || !database) {
-    // If we have a non-empty candidate but it's not a Postgres URL, keep it as a last resort
-    // so Prisma can throw a clearer error.
-    if (candidates[0]) return candidates[0];
+    // If DATABASE_URL is set but malformed (e.g. missing scheme), keep *that* as a last resort
+    // so Prisma can throw a clearer error (we intentionally do not fall back to other candidates).
+    if (databaseUrl) return databaseUrl;
     return "";
   }
 

@@ -2,8 +2,9 @@ import "dotenv/config";
 import { defineConfig } from "prisma/config";
 
 function buildDatabaseUrl(): string {
+  const databaseUrl = process.env.DATABASE_URL?.trim();
   const candidates = [
-    process.env.DATABASE_URL,
+    databaseUrl,
     process.env.POSTGRES_URL,
     process.env.POSTGRESQL_URL,
     process.env.POSTGRES_URL_NON_POOLING,
@@ -31,9 +32,9 @@ function buildDatabaseUrl(): string {
   const database = process.env.PGDATABASE ?? process.env.POSTGRES_DB ?? process.env.POSTGRESQL_DB;
 
   if (!host || !user || !password || !database) {
-    // If we have a non-empty candidate but it's not a postgres:// URL, keep it as a last resort
-    // so Prisma can throw a clearer error.
-    if (candidates[0]) return candidates[0];
+    // If DATABASE_URL is set but malformed (e.g. missing scheme), keep *that* as a last resort
+    // so Prisma can throw a clearer error (we intentionally do not fall back to other candidates).
+    if (databaseUrl) return databaseUrl;
     return "postgresql://postgres:postgres@localhost:5432/jobtracker?schema=public";
   }
 
@@ -53,4 +54,3 @@ export default defineConfig({
     url: buildDatabaseUrl()
   }
 });
-
