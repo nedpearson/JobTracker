@@ -5,9 +5,22 @@ import path from "node:path";
 // Prisma sometimes writes non-error status lines to stderr, so we pipe stderr -> stdout.
 
 function buildDatabaseUrl(env) {
-  const raw = (env.DATABASE_URL ?? "").trim();
+  const candidates = [
+    env.DATABASE_URL,
+    env.POSTGRES_URL,
+    env.POSTGRESQL_URL,
+    env.POSTGRES_URL_NON_POOLING,
+    env.POSTGRESQL_URL_NON_POOLING,
+    env.DATABASE_PRIVATE_URL,
+    env.DATABASE_PUBLIC_URL,
+  ]
+    .map((v) => (typeof v === "string" ? v.trim() : ""))
+    .filter(Boolean);
+
   // If it's already a valid Postgres URL, keep it.
-  if (raw && /^(postgresql|postgres):\/\//i.test(raw)) return raw;
+  for (const c of candidates) {
+    if (/^(postgresql|postgres):\/\//i.test(c)) return c;
+  }
 
   // Railway/managed Postgres often expose discrete PG* env vars.
   const host =
@@ -21,9 +34,9 @@ function buildDatabaseUrl(env) {
   const database = env.PGDATABASE ?? env.POSTGRES_DB ?? env.POSTGRESQL_DB;
 
   if (!host || !user || !password || !database) {
-    // If DATABASE_URL exists but isn't a Postgres URL (or is empty), keep it as a last resort
+    // If we have a non-empty candidate but it's not a Postgres URL, keep it as a last resort
     // so Prisma can throw a clearer error.
-    if (raw) return raw;
+    if (candidates[0]) return candidates[0];
     return "";
   }
 
@@ -55,6 +68,10 @@ if (!effectiveDatabaseUrl) {
       "Set a non-empty DATABASE_URL in your deployment environment (Railway Variables),",
       "or connect a Postgres plugin/service so PGHOST/PGUSER/PGPASSWORD/PGDATABASE are available.",
     ].join(" "),
+  );
+  // Non-secret env presence diagnostics (helps pinpoint a miswired Railway variable quickly).
+  console.error(
+    `[prisma] env present: DATABASE_URL=${Boolean(process.env.DATABASE_URL)} PGHOST=${Boolean(process.env.PGHOST)} PGUSER=${Boolean(process.env.PGUSER)} PGDATABASE=${Boolean(process.env.PGDATABASE)} PGPASSWORD=${Boolean(process.env.PGPASSWORD)}`,
   );
   process.exit(1);
 }

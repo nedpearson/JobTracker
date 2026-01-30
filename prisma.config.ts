@@ -2,9 +2,22 @@ import "dotenv/config";
 import { defineConfig } from "prisma/config";
 
 function buildDatabaseUrl(): string {
-  const raw = process.env.DATABASE_URL?.trim();
+  const candidates = [
+    process.env.DATABASE_URL,
+    process.env.POSTGRES_URL,
+    process.env.POSTGRESQL_URL,
+    process.env.POSTGRES_URL_NON_POOLING,
+    process.env.POSTGRESQL_URL_NON_POOLING,
+    process.env.DATABASE_PRIVATE_URL,
+    process.env.DATABASE_PUBLIC_URL
+  ]
+    .map((v) => v?.trim())
+    .filter((v): v is string => Boolean(v));
+
   // If it's already a valid Postgres URL, keep it.
-  if (raw && /^(postgresql|postgres):\/\//i.test(raw)) return raw;
+  for (const c of candidates) {
+    if (/^(postgresql|postgres):\/\//i.test(c)) return c;
+  }
 
   // Railway/managed Postgres often expose discrete PG* env vars.
   const host =
@@ -18,9 +31,9 @@ function buildDatabaseUrl(): string {
   const database = process.env.PGDATABASE ?? process.env.POSTGRES_DB ?? process.env.POSTGRESQL_DB;
 
   if (!host || !user || !password || !database) {
-    // If DATABASE_URL exists but isn't a postgres URL (or is empty), keep it as a last resort
+    // If we have a non-empty candidate but it's not a postgres:// URL, keep it as a last resort
     // so Prisma can throw a clearer error.
-    if (raw) return raw;
+    if (candidates[0]) return candidates[0];
     return "postgresql://postgres:postgres@localhost:5432/jobtracker?schema=public";
   }
 

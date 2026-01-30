@@ -1,10 +1,23 @@
 import { z } from "zod";
 
 function buildDatabaseUrl(): string | undefined {
-  const raw = process.env.DATABASE_URL;
-  const rawTrimmed = raw?.trim();
+  const candidates = [
+    process.env.DATABASE_URL,
+    // Common managed-Postgres variants
+    process.env.POSTGRES_URL,
+    process.env.POSTGRESQL_URL,
+    process.env.POSTGRES_URL_NON_POOLING,
+    process.env.POSTGRESQL_URL_NON_POOLING,
+    process.env.DATABASE_PRIVATE_URL,
+    process.env.DATABASE_PUBLIC_URL
+  ]
+    .map((v) => v?.trim())
+    .filter((v): v is string => Boolean(v));
+
   // If it's already a valid Postgres URL, keep it.
-  if (rawTrimmed && /^(postgresql|postgres):\/\//i.test(rawTrimmed)) return rawTrimmed;
+  for (const c of candidates) {
+    if (/^(postgresql|postgres):\/\//i.test(c)) return c;
+  }
 
   // Railway Postgres (and many managed Postgres providers) expose discrete PG* env vars.
   // If DATABASE_URL is missing OR malformed (e.g. missing scheme), reconstruct it.
@@ -19,9 +32,9 @@ function buildDatabaseUrl(): string | undefined {
   const database = process.env.PGDATABASE ?? process.env.POSTGRES_DB ?? process.env.POSTGRESQL_DB;
 
   if (!host || !user || !password || !database) {
-    // If DATABASE_URL exists but isn't a Postgres URL, keep it as a last resort.
-    // Prisma will throw a clearer error later if it's unusable.
-    if (rawTrimmed) return rawTrimmed;
+    // We intentionally do NOT return a non-postgres candidate (e.g. "file:./dev.db"),
+    // because this app is configured for Postgres.
+    //
     // Local dev default (keeps builds from crashing when env vars aren't set).
     return "postgresql://postgres:postgres@localhost:5432/jobtracker?schema=public";
   }
