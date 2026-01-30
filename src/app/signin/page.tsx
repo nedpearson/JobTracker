@@ -5,6 +5,23 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
+function safeCallbackPath(raw: string) {
+  // Only allow in-app redirects.
+  return raw.startsWith("/") ? raw : "/";
+}
+
+async function getRedirectTo(rawCallbackUrl: string) {
+  // Prefer AUTH_URL in production; fall back to forwarded headers.
+  const base = process.env.AUTH_URL;
+  if (base) return new URL(safeCallbackPath(rawCallbackUrl), base).toString();
+
+  const h = headers();
+  const proto = h.get("x-forwarded-proto") ?? "http";
+  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
+  const origin = `${proto}://${host}`;
+  return new URL(safeCallbackPath(rawCallbackUrl), origin).toString();
+}
+
 export default async function SignInPage({
   searchParams
 }: {
@@ -15,23 +32,6 @@ export default async function SignInPage({
   const error = typeof sp.error === "string" ? sp.error : "";
   const created = typeof sp.created === "string" ? sp.created : "";
   const emailPrefill = typeof sp.email === "string" ? sp.email : "";
-
-  function safeCallbackPath(raw: string) {
-    // Only allow in-app redirects.
-    return raw.startsWith("/") ? raw : "/";
-  }
-
-  async function getRedirectTo(rawCallbackUrl: string) {
-    // Prefer AUTH_URL in production; fall back to forwarded headers.
-    const base = process.env.AUTH_URL;
-    if (base) return new URL(safeCallbackPath(rawCallbackUrl), base).toString();
-
-    const h = await headers();
-    const proto = h.get("x-forwarded-proto") ?? "http";
-    const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
-    const origin = `${proto}://${host}`;
-    return new URL(safeCallbackPath(rawCallbackUrl), origin).toString();
-  }
 
   async function signInWithPassword(formData: FormData) {
     "use server";
