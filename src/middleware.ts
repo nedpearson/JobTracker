@@ -33,6 +33,6 @@ export default function middleware(req: NextRequest) {
 
 export const config = {
   // Never run middleware on /api routes (avoid redirecting fetch calls).
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|signin).*)"]
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|signin|signup).*)"]
 };
 

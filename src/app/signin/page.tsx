@@ -1,66 +1,72 @@
+import { signIn } from "@/auth";
+import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { env } from "@/lib/env";
-import { signIn } from "@/auth";
+import { Input } from "@/components/ui/Input";
 
-export default function SignInPage() {
-  async function signInGoogle() {
-    "use server";
-    await signIn("google", { redirectTo: "/" });
-  }
+export default async function SignInPage({
+  searchParams
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = (await searchParams) ?? {};
+  const callbackUrl = typeof sp.callbackUrl === "string" ? sp.callbackUrl : "/";
+  const error = typeof sp.error === "string" ? sp.error : "";
 
-  async function signInDemo(formData: FormData) {
+  async function signInWithPassword(formData: FormData) {
     "use server";
     const email = String(formData.get("email") ?? "");
-    const name = String(formData.get("name") ?? "");
-    await signIn("credentials", { email, name, redirectTo: "/" });
+    const password = String(formData.get("password") ?? "");
+    await signIn("credentials", { email, password, redirectTo: callbackUrl });
   }
 
-  const googleEnabled = Boolean(env.AUTH_GOOGLE_ID && env.AUTH_GOOGLE_SECRET);
-  const devDemoEnabled = process.env.NODE_ENV !== "production" && env.ALLOW_DEV_LOGIN === "true";
-
   return (
-    <div className="mx-auto max-w-lg space-y-4">
-      <Card title="Sign in" description="Connect Google for Gmail send, or use demo login in dev.">
-        <div className="mt-3 space-y-3">
-          {googleEnabled ? (
-            <form action={signInGoogle}>
-              <Button className="w-full" type="submit">
-                Continue with Google (Gmail)
-              </Button>
-            </form>
-          ) : (
-            <div className="text-muted text-sm">
-              Google OAuth isn’t configured yet. Add `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET` in
-              `.env` to enable Gmail integration.
-            </div>
-          )}
-
-          {devDemoEnabled && (
-            <form action={signInDemo} className="space-y-2">
-              <div className="grid gap-2 md:grid-cols-2">
-                <input
-                  className="glass w-full rounded-xl px-3 py-2 text-sm outline-none ring-1 ring-white/10 focus:ring-2 focus:ring-white/20"
-                  name="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  required
-                />
-                <input
-                  className="glass w-full rounded-xl px-3 py-2 text-sm outline-none ring-1 ring-white/10 focus:ring-2 focus:ring-white/20"
-                  name="name"
-                  type="text"
-                  placeholder="Name (optional)"
-                />
-              </div>
-              <Button className="w-full" variant="secondary" type="submit">
-                Demo login (dev)
-              </Button>
-            </form>
-          )}
+    <Card title="Sign in" description="Use your email and password to access your workspace.">
+      {error ? (
+        <div className="mt-2 rounded-xl bg-red-500/10 p-3 text-sm text-red-200 ring-1 ring-red-500/20">
+          {error === "CredentialsSignin" ? "Invalid email or password." : `Sign-in error: ${error}`}
         </div>
-      </Card>
-    </div>
+      ) : null}
+
+      <form action={signInWithPassword} className="mt-3 space-y-3">
+        <div className="space-y-2">
+          <label className="text-xs font-medium text-white/70">Email</label>
+          <Input name="email" type="email" placeholder="you@company.com" required autoComplete="email" />
+        </div>
+        <div className="space-y-2">
+          <label className="text-xs font-medium text-white/70">Password</label>
+          <Input
+            name="password"
+            type="password"
+            placeholder="••••••••"
+            required
+            autoComplete="current-password"
+          />
+        </div>
+        <div className="flex items-center justify-between">
+          <label className="flex items-center gap-2 text-xs text-white/70">
+            <input
+              name="remember"
+              type="checkbox"
+              defaultChecked
+              className="h-4 w-4 rounded border-white/20 bg-white/5"
+            />
+            Remember me
+          </label>
+          <div className="text-xs text-white/60">Redirect to: {callbackUrl}</div>
+        </div>
+        <Button className="w-full" type="submit">
+          Sign in
+        </Button>
+      </form>
+
+      <div className="mt-4 text-center text-sm text-white/70">
+        New here?{" "}
+        <Link className="underline decoration-white/20 underline-offset-4" href={`/signup?callbackUrl=${encodeURIComponent(callbackUrl)}`}>
+          Create an account
+        </Link>
+      </div>
+    </Card>
   );
 }
 

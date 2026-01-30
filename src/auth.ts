@@ -1,57 +1,32 @@
 import NextAuth from "next-auth";
-import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
+import { verifyPassword } from "@/lib/auth/password";
 
-const providers = [];
+const providers = [
+  Credentials({
+    name: "Email & Password",
+    credentials: {
+      email: { label: "Email", type: "email" },
+      password: { label: "Password", type: "password" }
+    },
+    async authorize(credentials) {
+      const email = (credentials?.email ?? "").toString().trim().toLowerCase();
+      const password = (credentials?.password ?? "").toString();
+      if (!email || !password) return null;
 
-if (env.AUTH_GOOGLE_ID && env.AUTH_GOOGLE_SECRET) {
-  providers.push(
-    Google({
-      clientId: env.AUTH_GOOGLE_ID,
-      clientSecret: env.AUTH_GOOGLE_SECRET,
-      authorization: {
-        params: {
-          scope:
-            "openid email profile https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/contacts.readonly",
-          access_type: "offline",
-          prompt: "consent"
-        }
-      }
-    })
-  );
-}
+      const user = await prisma.user.findUnique({ where: { email } });
+      if (!user?.passwordHash) return null;
 
-// Dev-only “demo login” so the app runs without Google setup.
-if (process.env.NODE_ENV !== "production" && env.ALLOW_DEV_LOGIN === "true") {
-  providers.push(
-    Credentials({
-      name: "Demo Login",
-      credentials: {
-        email: { label: "Email", type: "email", placeholder: "you@example.com" },
-        name: { label: "Name (optional)", type: "text" }
-      },
-      async authorize(credentials) {
-        const email = (credentials?.email ?? "").toString().trim().toLowerCase();
-        if (!email) return null;
-        const name = (credentials?.name ?? "").toString().trim() || undefined;
+      const ok = verifyPassword(password, user.passwordHash);
+      if (!ok) return null;
 
-        const existing = await prisma.user.findUnique({ where: { email } });
-        if (existing) return existing;
-
-        const created = await prisma.user.create({
-          data: {
-            email,
-            name
-          }
-        });
-        return created;
-      }
-    })
-  );
-}
+      return user;
+    }
+  })
+];
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
