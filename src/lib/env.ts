@@ -1,5 +1,38 @@
 import { z } from "zod";
 
+function buildDatabaseUrl(): string | undefined {
+  const raw = process.env.DATABASE_URL;
+  if (raw && raw.trim() !== "") {
+    // If it's already a valid Postgres URL, keep it.
+    if (/^(postgresql|postgres):\/\//i.test(raw)) return raw;
+    // If it's something else (e.g. a platform-specific value), keep it as a last resort.
+    // Prisma will throw a clearer error later if it's unusable.
+    return raw;
+  }
+
+  // Railway Postgres (and many managed Postgres providers) expose discrete PG* env vars.
+  // If DATABASE_URL is missing or malformed (e.g. missing scheme), reconstruct it.
+  const host =
+    process.env.PGHOST ??
+    process.env.POSTGRES_HOST ??
+    process.env.POSTGRESQL_HOST ??
+    process.env.POSTGRES_PRIVATE_HOST;
+  const port = process.env.PGPORT ?? process.env.POSTGRES_PORT ?? process.env.POSTGRESQL_PORT ?? "5432";
+  const user = process.env.PGUSER ?? process.env.POSTGRES_USER ?? process.env.POSTGRESQL_USER;
+  const password = process.env.PGPASSWORD ?? process.env.POSTGRES_PASSWORD ?? process.env.POSTGRESQL_PASSWORD;
+  const database = process.env.PGDATABASE ?? process.env.POSTGRES_DB ?? process.env.POSTGRESQL_DB;
+
+  if (!host || !user || !password || !database) {
+    // Local dev default (keeps builds from crashing when env vars aren't set).
+    return "postgresql://postgres:postgres@localhost:5432/jobtracker?schema=public";
+  }
+
+  const u = encodeURIComponent(user);
+  const p = encodeURIComponent(password);
+  const db = encodeURIComponent(database);
+  return `postgresql://${u}:${p}@${host}:${port}/${db}?schema=public`;
+}
+
 const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
   AUTH_SECRET: z.string().min(1),
@@ -19,7 +52,7 @@ const envSchema = z.object({
 });
 
 export const env = envSchema.parse({
-  DATABASE_URL: process.env.DATABASE_URL,
+  DATABASE_URL: buildDatabaseUrl(),
   AUTH_SECRET: process.env.AUTH_SECRET,
   AUTH_URL: process.env.AUTH_URL,
   AUTH_TRUST_HOST: process.env.AUTH_TRUST_HOST,
