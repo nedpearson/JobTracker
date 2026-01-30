@@ -4,29 +4,9 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
 import { verifyPassword } from "@/lib/auth/password";
-import type { Adapter } from "next-auth/adapters";
 import { ensureDemoSeed, getOrCreateDemoUser } from "@/lib/auth/demo";
 
-const baseAdapter = PrismaAdapter(prisma);
-const adapter: Adapter = {
-  ...baseAdapter,
-  async createSession(session) {
-    // IMPORTANT:
-    // Do NOT rely on AsyncLocalStorage between Credentials `authorize` and adapter methods.
-    // Instead, we persist the remember-me choice on the user record at login.
-    const user = await prisma.user.findUnique({
-      where: { id: session.userId },
-      select: { rememberMe: true }
-    });
-
-    if (user?.rememberMe === false) {
-      const twelveHours = 12 * 60 * 60 * 1000;
-      return baseAdapter.createSession!({ ...session, expires: new Date(Date.now() + twelveHours) });
-    }
-
-    return baseAdapter.createSession!(session);
-  }
-};
+const adapter = PrismaAdapter(prisma);
 
 const providers = [
   Credentials({
@@ -79,15 +59,45 @@ const providers = [
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter,
   secret: env.AUTH_SECRET,
-  session: { strategy: "database" },
+  // Credentials provider requires JWT sessions in Auth.js / NextAuth v5.
+  session: {
+    strategy: "jwt",
+    // Default to "remember me" length; we shorten per-login via token.exp when rememberMe is false.
+    maxAge: 30 * 24 * 60 * 60
+  },
+  jwt: {
+    maxAge: 30 * 24 * 60 * 60
+  },
   pages: {
     signIn: "/signin"
   },
   providers,
   callbacks: {
-    session({ session, user }) {
-      // make userId available in server routes
-      if (session.user) (session.user as unknown as { id: string }).id = user.id;
+    async jwt({ token, user }) {
+      // On first sign-in, persist user id (and rememberMe choice) into the token.
+      if (user) {
+        const rememberMe = (user as unknown as { rememberMe?: boolean }).rememberMe !== false;
+        (token as unknown as { id?: string; rememberMe?: boolean }).id = user.id;
+        (token as unknown as { rememberMe?: boolean }).rememberMe = rememberMe;
+
+        // Enforce per-login expiry:
+        // - rememberMe: 30 days
+        // - not remembered: 12 hours
+        const maxAgeSeconds = rememberMe ? 30 * 24 * 60 * 60 : 12 * 60 * 60;
+        token.exp = Math.floor(Date.now() / 1000) + maxAgeSeconds;
+      }
+
+      return token;
+    },
+    session({ session, token }) {
+      // Make userId available in server routes.
+      const id = (token as unknown as { id?: string }).id ?? token.sub;
+      if (session.user && id) (session.user as unknown as { id: string }).id = id;
+
+      // Keep session.expires aligned with token expiry when present.
+      if (typeof token.exp === "number") {
+        session.expires = new Date(token.exp * 1000).toISOString();
+      }
       return session;
     }
   }
