@@ -13,11 +13,11 @@ export function Card({
   children: React.ReactNode;
 }) {
   return (
-    <section className={cn("glass rounded-2xl p-4 outline-soft", className)}>
+    <section className={cn("surface rounded-2xl p-4", className)}>
       {(title || description) && (
         <header className="mb-2">
-          {title && <h2 className="text-sm font-semibold">{title}</h2>}
-          {description && <p className="text-muted mt-0.5 text-sm">{description}</p>}
+          {title && <h2 className="text-sm font-semibold text-text">{title}</h2>}
+          {description && <p className="mt-0.5 text-sm text-muted/80">{description}</p>}
         </header>
       )}
       {children}
