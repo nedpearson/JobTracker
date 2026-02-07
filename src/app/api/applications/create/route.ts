@@ -2,13 +2,17 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { addBusinessDays } from "@/lib/date";
+import { auditLogger, sanitizeForDatabase } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   const session = await auth();
   const userId = session?.user?.id;
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!userId) {
+    auditLogger.warn("Unauthorized application creation attempt");
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const body = (await req.json().catch(() => null)) as
     | {
@@ -20,7 +24,10 @@ export async function POST(req: Request) {
     | null;
 
   const jobId = body?.jobId;
-  if (!jobId) return NextResponse.json({ error: "Missing jobId" }, { status: 400 });
+  if (!jobId) {
+    auditLogger.error("Missing jobId in application creation", { userId });
+    return NextResponse.json({ error: "Missing jobId" }, { status: 400 });
+  }
 
   const existing = await prisma.application.findFirst({
     where: { userId, jobId },
@@ -35,25 +42,30 @@ export async function POST(req: Request) {
       data.nextFollowUpAt = addBusinessDays(new Date(), days);
     }
     if (Object.keys(data).length) {
-      await prisma.application.update({ where: { id: existing.id }, data });
+      const sanitized = sanitizeForDatabase(data);
+      await prisma.application.update({ where: { id: existing.id }, data: sanitized });
+      auditLogger.info("Application updated", { applicationId: existing.id, userId });
     }
     return NextResponse.json({ ok: true, applicationId: existing.id, created: false });
   }
 
+  const data = sanitizeForDatabase({
+    userId,
+    jobId,
+    stage: (body?.stage as any) ?? "INTERESTED",
+    appliedAt: body?.appliedAt ? new Date(body.appliedAt) : undefined,
+    nextFollowUpAt:
+      typeof body?.autoFollowUpBusinessDays === "number"
+        ? addBusinessDays(new Date(), Math.max(1, Math.min(30, Math.floor(body.autoFollowUpBusinessDays))))
+        : undefined
+  });
+
   const created = await prisma.application.create({
-    data: {
-      userId,
-      jobId,
-      stage: (body?.stage as any) ?? "INTERESTED",
-      appliedAt: body?.appliedAt ? new Date(body.appliedAt) : undefined,
-      nextFollowUpAt:
-        typeof body?.autoFollowUpBusinessDays === "number"
-          ? addBusinessDays(new Date(), Math.max(1, Math.min(30, Math.floor(body.autoFollowUpBusinessDays))))
-          : undefined
-    },
+    data: data as any,
     select: { id: true }
   });
 
+  auditLogger.info("Application created", { applicationId: created.id, userId, jobId });
   return NextResponse.json({ ok: true, applicationId: created.id, created: true });
 }
 
