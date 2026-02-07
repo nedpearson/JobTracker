@@ -23,40 +23,68 @@ An “agency-style” job hunting app: track jobs + applications, score your mat
 - Prisma + Postgres
 - Auth.js / NextAuth (Google OAuth)
 
-## Setup
+## Quick Start
 
-1. Install dependencies:
+### Prerequisites
+- Node.js v18.17 or higher
+- PostgreSQL (local or hosted via Supabase/Railway/Render)
+
+### Installation
+
+1. **Install dependencies:**
 
 ```bash
-cd job-tracker
 npm install
 ```
 
-2. Create `.env` from the example:
+2. **Configure database:**
 
+The app uses PostgreSQL. Choose one option:
+
+**Option A: Supabase (Recommended - Already Configured)**
+
+Update `.env` with your Supabase database password:
 ```bash
-copy .env.example .env
+DATABASE_URL="postgresql://postgres.yewtpupxbsgfdswjtyxy:YOUR_PASSWORD@aws-0-us-east-1.pooler.supabase.com:5432/postgres?pgbouncer=true&connection_limit=1"
+```
+Get password from: https://supabase.com/dashboard/project/yewtpupxbsgfdswjtyxy/settings/database
+
+**Option B: Local PostgreSQL**
+```bash
+createdb jobtracker
+# Update .env:
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/jobtracker?schema=public"
 ```
 
-3. Setup the database:
+3. **Run database migrations:**
 
 ```bash
-npm run prisma:migrate
+npm run prisma:migrate:deploy
 ```
 
-Note: Prisma client generation runs automatically on install/build (`postinstall` + `prebuild`). You can also run it manually:
+4. **Optional: Seed test data:**
 
 ```bash
-npm run prisma:generate
+npm run prisma:seed
 ```
 
-4. Run:
+Creates test user (email: `test@example.com`, password: `password123`) with sample jobs and applications.
+
+5. **Start development server:**
 
 ```bash
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Open **http://localhost:3000** and sign in!
+
+### First-Time Usage
+
+**Quick Demo:** Click "Demo Account" on the signin page for instant access with sample data.
+
+**Or Create Account:** Sign up with email/password at `/signup`.
+
+See **[SETUP.md](./SETUP.md)** for detailed setup instructions and troubleshooting.
 
 ## Google OAuth (Gmail send)
 
@@ -96,11 +124,49 @@ If you want broader search coverage (e.g. results that include listings from sit
 
 - `SERPAPI_API_KEY`
 
+## Documentation
+
+- **[SETUP.md](./SETUP.md)** - Detailed setup guide with troubleshooting
+- **[AUDIT_FINDINGS.md](./AUDIT_FINDINGS.md)** - Comprehensive system audit and architecture documentation
+- **[SECURITY.md](./SECURITY.md)** - Security practices and vulnerability reporting
+
+## Available Scripts
+
+```bash
+npm run dev              # Start development server
+npm run build            # Build for production
+npm start                # Start production server
+npm run lint             # Run ESLint
+npm run format           # Format code with Prettier
+npm run prisma:generate  # Generate Prisma Client
+npm run prisma:migrate   # Create new migration
+npm run prisma:migrate:deploy  # Apply migrations
+npm run prisma:studio    # Open Prisma Studio (database UI)
+npm run prisma:seed      # Seed test data
+```
+
 ## Sharing with others
 
 This app is designed so each user gets their own data.
 
 - **Share the code**: zip the `job-tracker` folder (excluding `node_modules` and `.env`) or publish to GitHub.
-- **Share a “fresh copy”**: new user signs in and starts with an empty workspace.
+- **Share a "fresh copy"**: new user signs in and starts with an empty workspace.
 - **Move your data**: export from Settings → Export, import on another instance.
+
+## Project Structure
+
+```
+job-tracker/
+├── src/
+│   ├── app/              # Next.js App Router pages and API routes
+│   ├── components/       # Reusable UI components
+│   ├── lib/              # Utilities, database, auth, audit
+│   └── types/            # TypeScript type definitions
+├── prisma/
+│   ├── schema.prisma     # Database schema
+│   ├── migrations/       # Database migrations
+│   └── seed.ts           # Seed script for test data
+├── public/               # Static assets
+└── .env                  # Environment variables (not committed)
+```
 

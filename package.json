@@ -16,6 +16,7 @@
     "prisma:migrate:deploy": "node scripts/prisma-migrate-deploy.mjs",
     "prisma:dbpush": "prisma db push",
     "prisma:studio": "prisma studio",
+    "prisma:seed": "tsx prisma/seed.ts",
     "postinstall": "prisma generate",
     "prebuild": "prisma generate"
   },
@@ -38,6 +39,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22.10.7",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
@@ -48,6 +50,7 @@
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.10",
     "tailwindcss": "^3.4.17",
+    "tsx": "^4.19.2",
     "typescript": "^5.7.3"
   },
   "overrides": {
