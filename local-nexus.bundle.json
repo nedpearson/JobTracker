@@ -1,0 +1,53 @@
+{
+  "service": {
+    "name": "Job Tracker (Next.js + Prisma)",
+    "description": "Job hunting app: track jobs/apps, match scoring, company research, AI writing, Gmail integration (optional).",
+    "category": "apps",
+    "tags": ["nextjs", "prisma", "postgres", "auth"],
+    "tech_stack": ["nodejs", "nextjs", "typescript", "tailwind", "prisma", "postgres"],
+    "dependencies": [],
+    "config_paths": ["C:/Users/nedpe/job-tracker/.env"],
+    "port": 3000,
+    "local_url": "http://127.0.0.1:3000",
+    "healthcheck_url": "http://127.0.0.1:3000/api/version",
+    "working_directory": "C:/Users/nedpe/job-tracker",
+    "start_command": "npm run dev -- -p {PORT}",
+    "stop_command": "",
+    "restart_command": "",
+    "env_overrides": {},
+    "database_id": null,
+    "database_connection_string": "${DATABASE_URL}",
+    "database_schema_overview": "Postgres via Prisma. Core tables include: User, Profile, Skill, Company, Job, Application, OutreachEmail, Contact, Account, Session."
+  },
+  "database": {
+    "database_name": "jobtracker",
+    "type": "postgres",
+    "host": "localhost",
+    "port": 5432,
+    "username_env": "PGUSER",
+    "password_env": "PGPASSWORD",
+    "connection_string": "postgresql://${PGUSER}:${PGPASSWORD}@${PGHOST}:${PGPORT}/${PGDATABASE}?schema=public",
+    "schema_overview": "Prisma schema includes: User, Account, Session, VerificationToken, Profile, Skill, Company, Job, Application, OutreachEmail, Contact, ApplicationContact (and enums)."
+  },
+  "keys": [
+    { "key_name": "Database URL", "env_var": "DATABASE_URL", "description": "Postgres connection string (required)" },
+    { "key_name": "Auth secret", "env_var": "AUTH_SECRET", "description": "Auth.js secret (required at runtime)" },
+    { "key_name": "Auth base URL", "env_var": "AUTH_URL", "description": "Typically http://localhost:3000 in dev" },
+    { "key_name": "Google OAuth client id", "env_var": "AUTH_GOOGLE_ID", "description": "Optional (Gmail integration)" },
+    { "key_name": "Google OAuth secret", "env_var": "AUTH_GOOGLE_SECRET", "description": "Optional (Gmail integration)" },
+    { "key_name": "OpenAI API key", "env_var": "OPENAI_API_KEY", "description": "Optional AI features" },
+    { "key_name": "SerpAPI key", "env_var": "SERPAPI_API_KEY", "description": "Optional job search connector" },
+    { "key_name": "PG host", "env_var": "PGHOST", "description": "Optional alternative DB config (Railway-style)" },
+    { "key_name": "PG port", "env_var": "PGPORT", "description": "Optional alternative DB config (Railway-style)" },
+    { "key_name": "PG user", "env_var": "PGUSER", "description": "Optional alternative DB config (Railway-style)" },
+    { "key_name": "PG password", "env_var": "PGPASSWORD", "description": "Optional alternative DB config (Railway-style)" },
+    { "key_name": "PG database", "env_var": "PGDATABASE", "description": "Optional alternative DB config (Railway-style)" }
+  ],
+  "requested_port": 3000,
+  "auto_assign_port": false,
+  "auto_create_db": true,
+  "meta": {
+    "source": "program-repo",
+    "repo": "https://github.com/nedpearson/JobTracker.git"
+  }
+}
